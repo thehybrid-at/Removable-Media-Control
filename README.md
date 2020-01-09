@@ -1,6 +1,6 @@
 # Removable Media Control using PowerShell script.
 
-__Disclaimer:__ I didn’t re-invent the wheel, I saw the MAIN component of this script- the media listener – in some comment while googling long time ago, and I wish I can find it again so I can give this man credit.
+__Disclaimer:__ I didn’t re-invent the wheel, I built this script on top of the removable media listner that I found in some comment while googling long time ago, and I wish I can find it again so I can give this man credit.
 
 ## Business case:
 
@@ -48,6 +48,7 @@ Start-Job -ScriptBlock {
    
    $driveconnected=""
 ) #end param
+##-------------------------The Listner Ends here ------------------
 ##for the pop-up message 
 $wshell = New-Object -ComObject Wscript.Shell
 $driveconnected=$driveconnected+":"
@@ -57,20 +58,22 @@ $initiallockstatus = $(manage-bde  -status $driveconnected | findstr  "Lock"  | 
 $lockstatus=$initiallockstatus
 $bitlocker="disabled"
 
-if ($initiallockstatus -eq 'Locked')
+if ($initiallockstatus -eq 'Locked')  # checks if the removeable media is encrypted
 {
  $bitlocker = "enabled"
+ # The below line just to be run standalone to get the password encoding, this shouldn't be a part of the script,
+ # The below two lines are there just to make sure the password is not clear text in the code. You can change the approach with the you way you like.
  #[Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes('Password00')) --> to generate encoded value (UABhAHMAcwB3AG8AcgBkADAAMAA=) mentioned below
- Unlock-BitLocker -MountPoint $driveconnected -Password $(ConvertTo-SecureString $([System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String('UABhAHMAcwB3AG8AcgBkADAAMAA='))) -AsPlainText -Force)
+ Unlock-BitLocker -MountPoint $driveconnected -Password $(ConvertTo-SecureString $([System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String('UABhAHMAcwB3AG8AcgBkADAAMAA='))) -AsPlainText -Force) #tries to decrypt the removeable media with our password
  ##check if usb is still blocked
  $afterunlock = $(manage-bde  -status $driveconnected | findstr  "Unlocked"  | findstr "Status").split(':')[1].replace(' ' , '')
-	if($afterunlock -eq 'Unlocked')
+	if($afterunlock -eq 'Unlocked') # Means that the removable media was encrypted the our passord
 	{
 		$LOG = "Authorized USB has been inserted by user "+$currentusername+" and deviceID "+$deviceid+" access granted"
 		Write-EventLog -LogName Application -Source "USBINSERTED" -EntryType Information -EventID 3333  -Message $LOG
 		
 	}
-	else
+	else # Means that the removable media was not encrypted the our passord
 	{
 		(New-Object -comObject Shell.Application).Namespace(17).ParseName($driveconnected).InvokeVerb("Eject")
 		$LOG = "Unauthorized USB has been inserted by user "+$currentusername+" and deviceID "+$deviceid+" access denied"
@@ -81,7 +84,7 @@ if ($initiallockstatus -eq 'Locked')
 
 }
 
-else 
+else # Removable media is already unencrypted.
 
 {
 	(New-Object -comObject Shell.Application).Namespace(17).ParseName($driveconnected).InvokeVerb("Eject")
