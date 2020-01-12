@@ -50,7 +50,7 @@ Start-Job -ScriptBlock {
 ) #end param
 ##-------------------------The Listner Ends here ------------------
 ##for the pop-up message 
-$wshell = New-Object -ComObject Wscript.Shell
+$wshell = New-Object -ComObject Wscript.Shell # To be used for a pop-up message to the user.
 $driveconnected=$driveconnected+":"
 $currentusername = Get-WMIObject -class Win32_ComputerSystem | select username | findstr "\"
 $deviceid = (Get-WmiObject -Class Win32_Volume | select Name,  SerialNumber | findstr $driveconnected).Split('')[-1]
@@ -64,21 +64,22 @@ if ($initiallockstatus -eq 'Locked')  # checks if the removeable media is encryp
  # The below line just to be run standalone to get the password encoding, this shouldn't be a part of the script,
  # The below two lines are there just to make sure the password is not clear text in the code. You can change the approach with the you way you like.
  #[Convert]::ToBase64String([System.Text.Encoding]::Unicode.GetBytes('Password00')) --> to generate encoded value (UABhAHMAcwB3AG8AcgBkADAAMAA=) mentioned below
+ # -------------The above line should not be left in the script ----------------
  Unlock-BitLocker -MountPoint $driveconnected -Password $(ConvertTo-SecureString $([System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String('UABhAHMAcwB3AG8AcgBkADAAMAA='))) -AsPlainText -Force) #tries to decrypt the removeable media with our password
  ##check if usb is still blocked
  $afterunlock = $(manage-bde  -status $driveconnected | findstr  "Unlocked"  | findstr "Status").split(':')[1].replace(' ' , '')
 	if($afterunlock -eq 'Unlocked') # Means that the removable media was encrypted the our passord
 	{
 		$LOG = "Authorized USB has been inserted by user "+$currentusername+" and deviceID "+$deviceid+" access granted"
-		Write-EventLog -LogName Application -Source "USBINSERTED" -EntryType Information -EventID 3333  -Message $LOG
+		Write-EventLog -LogName Application -Source "USBINSERTED" -EntryType Information -EventID 3333  -Message $LOG  #Writes to windows event log
 		
 	}
 	else # Means that the removable media was not encrypted the our passord
 	{
 		(New-Object -comObject Shell.Application).Namespace(17).ParseName($driveconnected).InvokeVerb("Eject")
 		$LOG = "Unauthorized USB has been inserted by user "+$currentusername+" and deviceID "+$deviceid+" access denied"
-		Write-EventLog -LogName Application -Source "USBINSERTED" -EntryType Information -EventID 3334  -Message $LOG
-		$wshell.Popup("An unauthorized USB has been detected on your machine and it has been disabled. Please contact your IT in case you need to use it",0,"UNAUTHORIZED USB detected",0)
+		Write-EventLog -LogName Application -Source "USBINSERTED" -EntryType Information -EventID 3334  -Message $LOG #Writes to windows event log
+		$wshell.Popup("An unauthorized USB has been detected on your machine and it has been disabled. Please contact your IT in case you need to use it",0,"UNAUTHORIZED USB detected",0) # pop-up message to user
 
 	}
 
@@ -89,9 +90,9 @@ else # Removable media is already unencrypted.
 {
 	(New-Object -comObject Shell.Application).Namespace(17).ParseName($driveconnected).InvokeVerb("Eject")
 	$LOG = "Unencrypted USB has been inserted by user "+$currentusername+" and deviceID "+$deviceid+" access denied"
-	Write-EventLog -LogName Application -Source "USBINSERTED" -EntryType Information -EventID 3335  -Message $LOG
+	Write-EventLog -LogName Application -Source "USBINSERTED" -EntryType Information -EventID 3335  -Message $LOG #Writes to windows event log
 	$wshell.AppActivate('TTILE')
-	$wshell.Popup("An unauthorized USB has been detected on your machine (unencrypted) and it has been disabled. Please contact your IT in case you need to use it",0,"Unencrypted USB detected",0)
+	$wshell.Popup("An unauthorized USB has been detected on your machine (unencrypted) and it has been disabled. Please contact your IT in case you need to use it",0,"Unencrypted USB detected",0) #pop-up message to user
 	
 	
 }
