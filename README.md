@@ -15,7 +15,9 @@ __Disclaimer:__ I didn’t re-invent the wheel, I built this script on top of th
 4.	All our encrypted USBs should auto-unlock if inserted in our network.   
 5.	All un-encrypted USBs should be eject automatically.   
 6.	All any other encrypted USBs with different passwords should be ejected automatically.    
-7.  Windows Event is logged.    
+7.  Windows Event is logged.  
+
+**NOTE:** Please make sure to read the comments in the code there is a line needs to be removed from the code.
 
 ```powershell
 #Requires -version 2.0
