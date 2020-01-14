@@ -13,7 +13,7 @@ __Disclaimer:__ I didn’t re-invent the wheel, I built this script on top of th
 2.	This team only knows the password.    
 3.	USBs to be distributed to the required teams/personnel   
 4.	All our encrypted USBs should auto-unlock if inserted in our network.   
-5.	All un-encrypted USBs should be eject automatically.   
+5.	All un-encrypted USBs should be ejected automatically.   
 6.	All any other encrypted USBs with different passwords should be ejected automatically.    
 7.  Windows Event is logged.  
 
