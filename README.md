@@ -1,6 +1,6 @@
 # Removable Media Control using PowerShell script.
 
-__Disclaimer:__ I didn’t re-invent the wheel, I built this script on top of the removable media listner that I found in some comment while googling long time ago, and I wish I can find it again so I can give this man credit.
+__Disclaimer:__ I didn’t re-invent the wheel, I built this script on top of the removable media listener that I found in some comment while googling long time ago, and I wish I can find it again so I can give this man credit.
 
 ## Business case:
 
@@ -17,7 +17,7 @@ __Disclaimer:__ I didn’t re-invent the wheel, I built this script on top of th
 6.	All any other encrypted USBs with different passwords should be ejected automatically.    
 7.  Windows Event is logged.  
 
-**NOTE:** Please make sure to read the comments in the code there is a line needs to be removed from the code.
+**NOTE:** Please make sure to read the comments in the code as there is a line needs to be removed from the code.
 
 ```powershell
 #Requires -version 2.0
